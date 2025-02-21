@@ -1,0 +1,24 @@
+    -This program implements a "multithreaded mapper-reducer system" that processes a list of files,
+extracts unique words, tracks the files they appear in, and organizes the results alphabetically by
+making use of POSIX threads (pthread).
+    -How to run : 
+    g++ main.cpp -o tema1 -lpthread | or use makefile
+    ./tema1 <num_mappers> <num_reducers> <input_file>
+
+    -The program starts with handling the arguments and reading the input files names. After declaring
+and initialising the mutex, the barrier, the threads and threads_data vectors, the mapper and reducer
+threads are created using pthread_create(). All necesary data is located in threads_data[i], such as
+the files to be read, the mutex, barrier, etc.
+
+    -The mapper threads will each handle a file designated by last_file_nr, which ensures that all files
+will be read as efficiently as posible. No thread will sit idle if there is work to be done. The file_mutex
+ensures that no race condition takes place. Next, the threads read and normalize the words and store them 
+in a local map. A barrier is set at the end to know when all mapper threads finish their job.
+
+    -The reducer threads first wait for the mapper ones to end, by waiting at the same barrier. After that,
+each thread will have its own combined_map that will contain all words starting with the threads own assigned
+letters from all the mapper threads local maps. This is why ThreadData contains both the number of mapper and
+reducer threads. After sorting by number of files found in, and then alphabetically, each thread will output
+the content of the sorted_entries in the assigned files.
+
+    -At the end of main(), the threads are joined and the mutex and barrier destroyed.
